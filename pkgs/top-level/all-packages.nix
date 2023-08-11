@@ -28920,6 +28920,8 @@ with pkgs;
 
   cherry = callPackage ../data/fonts/cherry { };
 
+  chicago95-gtk-theme = callPackage ../data/themes/chicago95-gtk-theme { };
+
   chonburi-font = callPackage ../data/fonts/chonburi { };
 
   chunk = callPackage ../data/fonts/chunk { };
