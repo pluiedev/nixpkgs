@@ -1,30 +1,31 @@
-{ lib
-, stdenv
-, stdenvNoCC
-, gcc13Stdenv
-, fetchFromGitHub
-, substituteAll
-, makeWrapper
-, makeDesktopItem
-, copyDesktopItems
-, vencord
-, electron
-, pipewire
-, libpulseaudio
-, libicns
-, jq
-, moreutils
-, nodePackages
+{
+  lib,
+  stdenv,
+  stdenvNoCC,
+  gcc13Stdenv,
+  fetchFromGitHub,
+  substituteAll,
+  makeWrapper,
+  makeDesktopItem,
+  copyDesktopItems,
+  vencord,
+  electron,
+  pipewire,
+  libpulseaudio,
+  libicns,
+  jq,
+  moreutils,
+  nodePackages,
 }:
 stdenv.mkDerivation rec {
   pname = "vesktop";
-  version = "0.4.2";
+  version = "0.4.3";
 
   src = fetchFromGitHub {
     owner = "Vencord";
     repo = "Vesktop";
     rev = "v${version}";
-    hash = "sha256-elgoX8z8q0+7uUia9gbcCmpDg+qYRWWUxdRuNV53Puw=";
+    hash = "sha256-wGOyDGY0FpAVS5+MTiKrOpDyd13ng0RLGAENW5tXuR4=";
   };
 
   pnpm-deps = stdenvNoCC.mkDerivation {
@@ -53,10 +54,13 @@ stdenv.mkDerivation rec {
 
     dontFixup = true;
     outputHashMode = "recursive";
-    outputHash = {
-      "aarch64-linux" = "sha256-Fkfq8vBfNXdndVb17aZOTvIOAyiccDzyuFvg6kDy7QI=";
-      "x86_64-linux" = "sha256-KDJ8QmpwGb2lOdwWEl5y62pJiqEvpI59StfQZrN1PPE=";
-    }.${stdenv.hostPlatform.system} or (throw "Unsupported system: ${stdenv.hostPlatform.system}");
+    outputHash =
+      {
+        "aarch64-linux" = "sha256-OcAQbUi+wpBAumncYxP3qtTzjyxiHL69kbQefwaeBfg=";
+        "x86_64-linux" = "sha256-R5/2MSH/jXHrj2x1Ap2OoOFLBLQp3Sq91o01uW8hWOw=";
+      }
+      .${stdenv.hostPlatform.system}
+      or (throw "Unsupported system: ${stdenv.hostPlatform.system}");
   };
 
   nativeBuildInputs = [
@@ -67,7 +71,10 @@ stdenv.mkDerivation rec {
   ];
 
   patches = [
-    (substituteAll { inherit vencord; src = ./use_system_vencord.patch; })
+    (substituteAll {
+      inherit vencord;
+      src = ./use_system_vencord.patch;
+    })
   ];
 
   ELECTRON_SKIP_BINARY_DOWNLOAD = 1;
@@ -95,35 +102,33 @@ stdenv.mkDerivation rec {
 
   # this is consistent with other nixpkgs electron packages and upstream, as far as I am aware
   # yes, upstream really packages it as "vesktop" but uses "vencorddesktop" file names
-  installPhase =
-    let
-      # this is mainly required for venmic
-      libPath = lib.makeLibraryPath [
-        libpulseaudio
-        pipewire
-        gcc13Stdenv.cc.cc.lib
-      ];
-    in
-    ''
-      runHook preInstall
+  installPhase = let
+    # this is mainly required for venmic
+    libPath = lib.makeLibraryPath [
+      libpulseaudio
+      pipewire
+      gcc13Stdenv.cc.cc.lib
+    ];
+  in ''
+    runHook preInstall
 
-      mkdir -p $out/opt/Vesktop/resources
-      cp dist/linux-*unpacked/resources/app.asar $out/opt/Vesktop/resources
+    mkdir -p $out/opt/Vesktop/resources
+    cp dist/linux-*unpacked/resources/app.asar $out/opt/Vesktop/resources
 
-      pushd build
-      ${libicns}/bin/icns2png -x icon.icns
-      for file in icon_*x32.png; do
-        file_suffix=''${file//icon_}
-        install -Dm0644 $file $out/share/icons/hicolor/''${file_suffix//x32.png}/apps/vencorddesktop.png
-      done
+    pushd build
+    ${libicns}/bin/icns2png -x icon.icns
+    for file in icon_*x32.png; do
+      file_suffix=''${file//icon_}
+      install -Dm0644 $file $out/share/icons/hicolor/''${file_suffix//x32.png}/apps/vencorddesktop.png
+    done
 
-      makeWrapper ${electron}/bin/electron $out/bin/vencorddesktop \
-        --prefix LD_LIBRARY_PATH : ${libPath} \
-        --add-flags $out/opt/Vesktop/resources/app.asar \
-        --add-flags "\''${NIXOS_OZONE_WL:+\''${WAYLAND_DISPLAY:+--ozone-platform-hint=auto --enable-features=WaylandWindowDecorations}}"
+    makeWrapper ${electron}/bin/electron $out/bin/vencorddesktop \
+      --prefix LD_LIBRARY_PATH : ${libPath} \
+      --add-flags $out/opt/Vesktop/resources/app.asar \
+      --add-flags "\''${NIXOS_OZONE_WL:+\''${WAYLAND_DISPLAY:+--ozone-platform-hint=auto --enable-features=WaylandWindowDecorations}}"
 
-      runHook postInstall
-    '';
+    runHook postInstall
+  '';
 
   desktopItems = [
     (makeDesktopItem {
@@ -133,7 +138,7 @@ stdenv.mkDerivation rec {
       icon = "vencorddesktop";
       startupWMClass = "VencordDesktop";
       genericName = "Internet Messenger";
-      keywords = [ "discord" "vencord" "electron" "chat" ];
+      keywords = ["discord" "vencord" "electron" "chat"];
     })
   ];
 
@@ -141,8 +146,8 @@ stdenv.mkDerivation rec {
     description = "An alternate client for Discord with Vencord built-in";
     homepage = "https://github.com/Vencord/Vesktop";
     license = licenses.gpl3Only;
-    maintainers = with maintainers; [ getchoo Scrumplex vgskye ];
-    platforms = [ "x86_64-linux" "aarch64-linux" ];
+    maintainers = with maintainers; [getchoo Scrumplex vgskye];
+    platforms = ["x86_64-linux" "aarch64-linux"];
     mainProgram = "vencorddesktop";
   };
 }
