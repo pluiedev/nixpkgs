@@ -13494,6 +13494,8 @@ self: super: with self; {
 
   queuelib = callPackage ../development/python-modules/queuelib { };
 
+  quicktile = callPackage ../development/python-modules/quicktile { };
+
   quil = callPackage ../development/python-modules/quil { };
 
   quixote = callPackage ../development/python-modules/quixote { };
