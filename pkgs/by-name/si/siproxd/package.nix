@@ -23,6 +23,7 @@ stdenv.mkDerivation rec {
   ];
 
   meta = {
+    broken = true; # To be removed in 25.11
     homepage = "http://siproxd.sourceforge.net/";
     description = "Masquerading SIP Proxy Server";
     mainProgram = "siproxd";
